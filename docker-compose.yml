@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  # 1. Le Script Python (Collector)
+  monitoring-agent:
+    build: ./app
+    container_name: python_monitor
+    depends_on:
+      - influxdb
+    environment:
+      - DOCKER_INFLUXDB_INIT_ORG=mon_org
+      - DOCKER_INFLUXDB_INIT_BUCKET=mon_bucket
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=mon_super_token
+    # ASTUCE CRITIQUE : Monter /proc et /sys dans un dossier spécifique pour ne pas écraser ceux du conteneur
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro 
+      # Si vous êtes sous Linux/Mac, cela suffit souvent. 
+      # Sous Windows avec WSL2, cela peut varier.
+    # restart: always
+
+  # 2. La Base de Données (Stockage)
+  influxdb:
+    image: influxdb:2.7
+    container_name: influxdb
+    ports:
+      - "8086:8086"
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=password123456
+      - DOCKER_INFLUXDB_INIT_ORG=mon_org
+      - DOCKER_INFLUXDB_INIT_BUCKET=mon_bucket
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=mon_super_token
+    volumes:
+      - influxdb_data:/var/lib/influxdb2
+
+  # 3. Le Dashboard (Visualisation)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - influxdb
+    volumes:
+      - grafana_data:/var/lib/grafana
+
+volumes:
+  influxdb_data:
+  grafana_data:

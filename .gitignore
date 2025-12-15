@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+.env
+.venv/
+venv/
+
+# Editor
+.vscode/
+.idea/
+.DS_Store
+
+# Docker / data
+influxdb_data/
+grafana_data/
+
+# Logs
+*.log
+
+# Misc
+*.pyc
+coverage/
+
+README.md
